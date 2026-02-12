@@ -37,4 +37,4 @@ uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwmblocks
 
 .PHONY: all options clean install 
-uninstall
+	uninstall
