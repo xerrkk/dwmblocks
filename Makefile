@@ -1,12 +1,14 @@
-PREFIX  := /usr/local
-CC      := cc
-CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os
-LDFLAGS := -lX11
+# Use your home local directory since /usr/local is read-only on Guix
+PREFIX  ?= ${HOME}/.local
+CC      := gcc
 
-# FreeBSD (uncomment)
-#LDFLAGS += -L/usr/local/lib -I/usr/local/include
-# # OpenBSD (uncomment)
-#LDFLAGS += -L/usr/X11R6/lib -I/usr/X11R6/include
+# Use pkg-config to find X11 paths dynamically
+X11_CFLAGS := $(shell pkg-config --cflags x11)
+X11_LIBS   := $(shell pkg-config --libs x11)
+
+# Combined flags
+CFLAGS  := -pedantic -Wall -Wno-deprecated-declarations -Os ${X11_CFLAGS}
+LDFLAGS := ${X11_LIBS}
 
 all: options dwmblocks
 
@@ -16,6 +18,7 @@ options:
 	@echo "LDFLAGS = ${LDFLAGS}"
 	@echo "CC      = ${CC}"
 
+# Note: Added ${LDFLAGS} at the end of the command (order matters for some linkers)
 dwmblocks: dwmblocks.c blocks.def.h blocks.h
 	${CC} -o dwmblocks dwmblocks.c ${CFLAGS} ${LDFLAGS}
 
@@ -23,7 +26,7 @@ blocks.h:
 	cp blocks.def.h $@
 
 clean:
-	rm -f *.o *.gch dwmblocks
+	rm -f *.o *.gch dwmblocks blocks.h
 
 install: dwmblocks
 	mkdir -p ${DESTDIR}${PREFIX}/bin
@@ -33,4 +36,5 @@ install: dwmblocks
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwmblocks
 
-.PHONY: all options clean install uninstall
+.PHONY: all options clean install 
+uninstall
